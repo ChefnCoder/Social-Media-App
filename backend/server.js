@@ -15,7 +15,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://social-tutedude.vercel.app/", "http://localhost:3000" ], // Allow Netlify
+    origin: "*", // Allow Netlify
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
