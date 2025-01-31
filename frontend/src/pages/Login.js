@@ -5,8 +5,8 @@ import { AuthContext } from "../context/AuthContext";
 import { Container, Form, Button, Alert, Card } from "react-bootstrap";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("tanmay@example.com");
+  const [password, setPassword] = useState("abc");
   const [error, setError] = useState("");
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
