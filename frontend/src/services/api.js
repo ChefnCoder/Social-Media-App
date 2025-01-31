@@ -70,3 +70,72 @@ export const fetchFriends = async (token) => {
     return [];
   }
 };
+
+
+// Send a friend request
+export const sendFriendRequest = async (token, userId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/friends/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ userId }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Error sending friend request:", error);
+  }
+};
+
+// Accept a friend request
+export const acceptFriendRequest = async (token, userId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/friends/accept`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ userId }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Error accepting friend request:", error);
+  }
+};
+
+// Reject a friend request
+export const rejectFriendRequest = async (token, userId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/friends/reject`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ userId }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Error rejecting friend request:", error);
+  }
+};
+
+// Fetch pending friend requests
+export const fetchFriendRequests = async (token) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/friends/requests`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching friend requests:", error);
+    return [];
+  }
+};
