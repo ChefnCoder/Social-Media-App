@@ -20,7 +20,6 @@ const Home = () => {
   const [recommendedFriends, setRecommendedFriends] = useState([]);
   const [sentRequests, setSentRequests] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterMutual, setFilterMutual] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -38,6 +37,12 @@ const Home = () => {
 
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [token]);
+
+  // Filter users based on search query
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Send friend request and update UI
   const handleSendRequest = async (userId) => {
@@ -92,71 +97,65 @@ const Home = () => {
             </ListGroup>
           </Card>
         </Col>
-        
 
         {/* Friend Requests & Recommended Friends (Stacked) */}
         <Col md={4}>
-        {/* Friend Requests */}
-            <Card className="shadow mb-5"> {/* Added margin-bottom (mb-3) for spacing */}
-                <Card.Header as="h5" className="fw-bold text-center bg-warning text-dark">Friend Requests</Card.Header>
-                <ListGroup variant="flush">
-                {friendRequests.length > 0 ? (
-                    friendRequests.map((request) => (
-                    <ListGroup.Item key={request._id} className="d-flex justify-content-between align-items-center p-3">
-                        <div>
-                        <strong>{request.name}</strong> (@{request.username})
-                        </div>
-                        <div>
-                            <div>
-                        <Button variant="success" size="sm" className="me-2 m-1 rounded-pill" onClick={() => handleAcceptRequest(request._id)}>
-                            Accept
-                        </Button>
-                        </div><div>
-                        <Button variant="danger" size="sm" className=" m-1 me-2 rounded-pill" onClick={() => handleRejectRequest(request._id)}>
-                            Reject
-                        </Button>
-                        </div>
-                        </div>
-                    </ListGroup.Item>
-                    ))
-                ) : (
-                    <ListGroup.Item className="text-center text-muted">No friend requests.</ListGroup.Item>
-                )}
-                </ListGroup>
-            </Card>
+          {/* Friend Requests */}
+          <Card className="shadow mb-5">
+            <Card.Header as="h5" className="fw-bold text-center bg-warning text-dark">Friend Requests</Card.Header>
+            <ListGroup variant="flush">
+              {friendRequests.length > 0 ? (
+                friendRequests.map((request) => (
+                  <ListGroup.Item key={request._id} className="d-flex flex-column align-items-center p-2 mb-2">
+                    <div>
+                      <strong>{request.name}</strong> (@{request.username})
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center mt-2">
+                      <Button variant="success" size="sm" className="me-2 rounded-pill" onClick={() => handleAcceptRequest(request._id)}>
+                        Accept
+                      </Button>
+                      <Button variant="danger" size="sm" className="rounded-pill" onClick={() => handleRejectRequest(request._id)}>
+                        Reject
+                      </Button>
+                    </div>
+                  </ListGroup.Item>
+                ))
+              ) : (
+                <ListGroup.Item className="text-center text-muted">No friend requests.</ListGroup.Item>
+              )}
+            </ListGroup>
+          </Card>
 
-            {/* Friend Recommendations (Below Friend Requests) */}
-            <Card className="shadow">
-                <Card.Header as="h5" className="fw-bold text-center bg-info text-dark">
-                    Mutual Friends
-                </Card.Header>
-                <ListGroup variant="flush">
-                    {recommendedFriends.length > 0 ? (
-                    recommendedFriends.map((user) => (
-                        <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center p-3">
-                        <div>
-                            <strong>{user.name}</strong> (@{user.username})
-                            <small className="text-muted"> - {user.mutualFriendsCount} mutual friends</small>
-                        </div>
-                        <Button
-                            variant={sentRequests.has(user._id) ? "secondary" : "primary"}
-                            size="sm"
-                            className="rounded-pill"
-                            disabled={sentRequests.has(user._id)}
-                            onClick={() => handleSendRequest(user._id)}
-                        >
-                            {sentRequests.has(user._id) ? "Pending" : "Add Friend"}
-                        </Button>
-                        </ListGroup.Item>
-                    ))
-                    ) : (
-                    <ListGroup.Item className="text-center text-muted">No recommendations available.</ListGroup.Item>
-                    )}
-                </ListGroup>
-            </Card>
-
+          {/* Friend Recommendations */}
+          <Card className="shadow">
+            <Card.Header as="h5" className="fw-bold text-center bg-info text-dark">
+              Mutual Friends
+            </Card.Header>
+            <ListGroup variant="flush">
+              {recommendedFriends.length > 0 ? (
+                recommendedFriends.map((user) => (
+                  <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center p-2 mb-2">
+                    <div>
+                      <strong>{user.name}</strong> (@{user.username})
+                      <small className="text-muted"> - {user.mutualFriendsCount} mutual friends</small>
+                    </div>
+                    <Button
+                      variant={sentRequests.has(user._id) ? "secondary" : "primary"}
+                      size="sm"
+                      className="rounded-pill"
+                      disabled={sentRequests.has(user._id)}
+                      onClick={() => handleSendRequest(user._id)}
+                    >
+                      {sentRequests.has(user._id) ? "Pending" : "Add Friend"}
+                    </Button>
+                  </ListGroup.Item>
+                ))
+              ) : (
+                <ListGroup.Item className="text-center text-muted">No recommendations available.</ListGroup.Item>
+              )}
+            </ListGroup>
+          </Card>
         </Col>
-
 
         {/* All Users with Search */}
         <Col md={4}>
@@ -172,13 +171,13 @@ const Home = () => {
               />
             </Card.Header>
             <ListGroup variant="flush">
-              {users.length > 0 ? (
-                users.map((user) => {
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => {
                   const isFriend = friends.some((friend) => friend._id === user._id);
                   const isPending = sentRequests.has(user._id);
 
                   return (
-                    <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center p-3">
+                    <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center p-2 mb-2">
                       <div>
                         <strong>{user.name}</strong> (@{user.username})
                       </div>
@@ -206,4 +205,3 @@ const Home = () => {
 };
 
 export default Home;
-
