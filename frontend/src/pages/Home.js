@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { fetchUsers, fetchFriends } from "../services/api";
-import { Container, Row, Col, Card, ListGroup } from "react-bootstrap";
+import { Container, Row, Col, Card, ListGroup, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-  const { user, token } = useContext(AuthContext);
+  const { user, token, logout } = useContext(AuthContext);
   const [users, setUsers] = useState([]);
   const [friends, setFriends] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (token) {
@@ -17,7 +19,12 @@ const Home = () => {
 
   return (
     <Container className="mt-4">
-      <h2 className="text-center">Welcome, {user?.name}</h2>
+      <div className="d-flex justify-content-between align-items-center">
+        <h2>Welcome, {user?.name}</h2>
+        <Button variant="danger" onClick={() => { logout(); navigate("/login"); }}>
+          Logout
+        </Button>
+      </div>
 
       <Row className="mt-4">
         {/* Friends List */}
