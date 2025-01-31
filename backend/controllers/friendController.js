@@ -103,4 +103,28 @@ const getFriendRequests = async (req, res) => {
   }
 };
 
-module.exports = { sendFriendRequest, acceptFriendRequest, rejectFriendRequest, getFriendRequests };
+const unfriendUser = async (req, res) => {
+  try {
+    const { userId } = req.body; // ID of the user to unfriend
+
+    const currentUser = await User.findById(req.user.id);
+    const friendToRemove = await User.findById(userId);
+
+    if (!currentUser || !friendToRemove) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove each other from friends list
+    currentUser.friends = currentUser.friends.filter((id) => id.toString() !== userId);
+    friendToRemove.friends = friendToRemove.friends.filter((id) => id.toString() !== req.user.id);
+
+    await currentUser.save();
+    await friendToRemove.save();
+
+    res.status(200).json({ message: "Friend removed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error removing friend", error });
+  }
+};
+
+module.exports = { sendFriendRequest, acceptFriendRequest, rejectFriendRequest, getFriendRequests, unfriendUser };

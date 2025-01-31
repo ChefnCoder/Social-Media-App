@@ -8,6 +8,7 @@ import {
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
+  unfriendUser,
 } from "../services/api";
 import { Container, Row, Col, Card, ListGroup, Button, Form } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
@@ -33,6 +34,8 @@ const Home = () => {
     const interval = setInterval(() => {
       fetchFriendRequests(token).then(setFriendRequests);
       fetchFriends(token).then(setFriends);
+      fetchFriendRecommendations(token).then(setRecommendedFriends);
+      fetchUsers(token).then(setUsers);
     }, 5000);
 
     return () => clearInterval(interval); // Cleanup interval on component unmount
@@ -68,6 +71,17 @@ const Home = () => {
     toast.info("Friend request rejected.");
   };
 
+  // Unfriend a user
+  const handleUnfriend = async (userId) => {
+    const response = await unfriendUser(token, userId);
+    if (response.message) {
+      fetchFriends(token).then(setFriends);
+      toast.success("Friend removed successfully!");
+    } else {
+      toast.error("Failed to remove friend.");
+    }
+  };
+
   return (
     <Container className="mt-4">
       <ToastContainer position="top-right" autoClose={2000} />
@@ -89,6 +103,14 @@ const Home = () => {
                 friends.map((friend) => (
                   <ListGroup.Item key={friend._id} className="d-flex justify-content-between align-items-center p-3">
                     <strong>{friend.name}</strong> (@{friend.username})
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="rounded-pill"
+                      onClick={() => handleUnfriend(friend._id)}
+                    >
+                      Unfriend
+                    </Button>
                   </ListGroup.Item>
                 ))
               ) : (
@@ -156,7 +178,6 @@ const Home = () => {
             </ListGroup>
           </Card>
         </Col>
-
         {/* All Users with Search */}
         <Col md={4}>
           <Card className="shadow">

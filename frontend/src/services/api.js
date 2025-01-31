@@ -157,3 +157,21 @@ export const fetchFriendRecommendations = async (token) => {
     return [];
   }
 };
+
+export const unfriendUser = async (token, userId) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/friends/remove`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId }),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error("Error removing friend:", error);
+      return { error: "Failed to remove friend" };
+    }
+  };
+  
