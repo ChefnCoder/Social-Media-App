@@ -139,3 +139,21 @@ export const fetchFriendRequests = async (token) => {
     return [];
   }
 };
+
+
+// Fetch friend recommendations based on mutual friends
+export const fetchFriendRecommendations = async (token) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/recommendations`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching friend recommendations:", error);
+    return [];
+  }
+};
