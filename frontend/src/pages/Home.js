@@ -35,7 +35,7 @@ const Home = () => {
       fetchFriendRequests(token).then(setFriendRequests);
       fetchFriends(token).then(setFriends);
       fetchFriendRecommendations(token).then(setRecommendedFriends);
-      fetchUsers(token).then(setUsers);
+      
     }, 5000);
 
     return () => clearInterval(interval); // Cleanup interval on component unmount
@@ -177,7 +177,9 @@ const Home = () => {
               )}
             </ListGroup>
           </Card>
+          
         </Col>
+
         {/* All Users with Search */}
         <Col md={4}>
           <Card className="shadow">
@@ -220,6 +222,7 @@ const Home = () => {
             </ListGroup>
           </Card>
         </Col>
+
       </Row>
     </Container>
   );
