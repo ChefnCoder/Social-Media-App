@@ -36,7 +36,6 @@ const sendFriendRequest = async (req, res) => {
     res.status(500).json({ message: "Error sending friend request", error });
   }
 };
-
 //similarly all 
 const acceptFriendRequest = async (req, res) => {
   try {

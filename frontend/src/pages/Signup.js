@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../services/api";
-import { Container, Form, Button, Alert } from "react-bootstrap";
+import { Container, Form, Button, Alert, Card } from "react-bootstrap";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -22,38 +22,40 @@ const Signup = () => {
   };
 
   return (
-    <Container className="mt-5" style={{ maxWidth: "400px" }}>
-      <h3 className="text-center">Sign Up</h3>
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSignup}>
-        <Form.Group className="mb-3">
-          <Form.Label>Name</Form.Label>
-          <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-        </Form.Group>
+    <Container className="d-flex justify-content-center align-items-center vh-100">
+      <Card className="shadow-lg p-4 rounded" style={{ width: "400px" }}>
+        <h3 className="text-center fw-bold mb-4">Sign Up</h3>
+        {error && <Alert variant="danger">{error}</Alert>}
+        <Form onSubmit={handleSignup}>
+          <Form.Group className="mb-3">
+            <Form.Label>Name</Form.Label>
+            <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Username</Form.Label>
-          <Form.Control type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Username</Form.Label>
+            <Form.Control type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+          </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Email</Form.Label>
-          <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Email</Form.Label>
+            <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label>Password</Form.Label>
-          <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Password</Form.Label>
+            <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </Form.Group>
 
-        <Button variant="primary" type="submit" className="w-100">
-          Sign Up
-        </Button>
-      </Form>
+          <Button variant="primary" type="submit" className="w-100 rounded-pill">
+            Sign Up
+          </Button>
+        </Form>
 
-      <p className="text-center mt-3">
-        Already have an account? <a href="/login">Login</a>
-      </p>
+        <p className="text-center mt-3">
+          Already have an account? <a href="/login" className="text-primary">Login</a>
+        </p>
+      </Card>
     </Container>
   );
 };

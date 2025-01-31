@@ -18,7 +18,7 @@ const Home = () => {
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [recommendedFriends, setRecommendedFriends] = useState([]);
-  const [sentRequests, setSentRequests] = useState(new Set()); // Track sent requests
+  const [sentRequests, setSentRequests] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMutual, setFilterMutual] = useState(false);
 
@@ -29,114 +29,139 @@ const Home = () => {
       fetchFriendRequests(token).then(setFriendRequests);
       fetchFriendRecommendations(token).then(setRecommendedFriends);
     }
+
+    // Poll for new friend requests every 5 seconds
+    const interval = setInterval(() => {
+      fetchFriendRequests(token).then(setFriendRequests);
+      fetchFriends(token).then(setFriends);
+    }, 5000);
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [token]);
 
   // Send friend request and update UI
   const handleSendRequest = async (userId) => {
     await sendFriendRequest(token, userId);
-    setSentRequests((prev) => new Set([...prev, userId])); // Update state to mark request as sent
+    setSentRequests((prev) => new Set([...prev, userId])); // Mark request as sent
     fetchUsers(token).then(setUsers);
     fetchFriendRecommendations(token).then(setRecommendedFriends);
     toast.success("Friend request sent!");
   };
 
+  // Accept friend request
+  const handleAcceptRequest = async (userId) => {
+    await acceptFriendRequest(token, userId);
+    fetchFriends(token).then(setFriends);
+    fetchFriendRequests(token).then(setFriendRequests);
+    toast.success("Friend request accepted!");
+  };
+
+  // Reject friend request
+  const handleRejectRequest = async (userId) => {
+    await rejectFriendRequest(token, userId);
+    fetchFriendRequests(token).then(setFriendRequests);
+    toast.info("Friend request rejected.");
+  };
+
   return (
     <Container className="mt-4">
       <ToastContainer position="top-right" autoClose={2000} />
-      
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Welcome, {user?.name}</h2>
-        <Button variant="danger" onClick={logout}>Logout</Button>
+
+      <div className="d-flex justify-content-between align-items-center mb-4 p-3 border rounded shadow-sm">
+        <h2 className="fw-bold">Welcome, {user?.name}</h2>
+        <Button variant="danger" className="rounded-pill px-4" onClick={logout}>
+          Logout
+        </Button>
       </div>
 
-      <Row>
+      <Row className="g-4">
         {/* Friends List */}
-        <Col md={3}>
-          <Card>
-            <Card.Header as="h5">Friends List</Card.Header>
+        <Col md={4}>
+          <Card className="shadow">
+            <Card.Header as="h5" className="fw-bold text-center bg-primary text-white">Friends List</Card.Header>
             <ListGroup variant="flush">
               {friends.length > 0 ? (
                 friends.map((friend) => (
-                  <ListGroup.Item key={friend._id}>
+                  <ListGroup.Item key={friend._id} className="d-flex justify-content-between align-items-center p-3">
                     <strong>{friend.name}</strong> (@{friend.username})
                   </ListGroup.Item>
                 ))
               ) : (
-                <ListGroup.Item>No friends yet.</ListGroup.Item>
+                <ListGroup.Item className="text-center text-muted">No friends yet.</ListGroup.Item>
               )}
             </ListGroup>
           </Card>
         </Col>
+        
 
+        {/* Friend Requests & Recommended Friends (Stacked) */}
+        <Col md={4}>
         {/* Friend Requests */}
-        <Col md={3}>
-          <Card>
-            <Card.Header as="h5">Friend Requests</Card.Header>
-            <ListGroup variant="flush">
-              {friendRequests.length > 0 ? (
-                friendRequests.map((request) => (
-                  <ListGroup.Item key={request._id}>
-                    <strong>{request.name}</strong> (@{request.username})
-                    <div className="d-flex justify-content-end mt-2">
-                      <Button variant="success" size="sm" onClick={() => acceptFriendRequest(token, request._id)}>
-                        Accept
-                      </Button>
-                      <Button variant="danger" size="sm" className="ms-2" onClick={() => rejectFriendRequest(token, request._id)}>
-                        Reject
-                      </Button>
-                    </div>
-                  </ListGroup.Item>
-                ))
-              ) : (
-                <ListGroup.Item>No friend requests.</ListGroup.Item>
-              )}
-            </ListGroup>
-          </Card>
+            <Card className="shadow mb-5"> {/* Added margin-bottom (mb-3) for spacing */}
+                <Card.Header as="h5" className="fw-bold text-center bg-warning text-dark">Friend Requests</Card.Header>
+                <ListGroup variant="flush">
+                {friendRequests.length > 0 ? (
+                    friendRequests.map((request) => (
+                    <ListGroup.Item key={request._id} className="d-flex justify-content-between align-items-center p-3">
+                        <div>
+                        <strong>{request.name}</strong> (@{request.username})
+                        </div>
+                        <div>
+                            <div>
+                        <Button variant="success" size="sm" className="me-2 m-1 rounded-pill" onClick={() => handleAcceptRequest(request._id)}>
+                            Accept
+                        </Button>
+                        </div><div>
+                        <Button variant="danger" size="sm" className=" m-1 me-2 rounded-pill" onClick={() => handleRejectRequest(request._id)}>
+                            Reject
+                        </Button>
+                        </div>
+                        </div>
+                    </ListGroup.Item>
+                    ))
+                ) : (
+                    <ListGroup.Item className="text-center text-muted">No friend requests.</ListGroup.Item>
+                )}
+                </ListGroup>
+            </Card>
+
+            {/* Friend Recommendations (Below Friend Requests) */}
+            <Card className="shadow">
+                <Card.Header as="h5" className="fw-bold text-center bg-info text-dark">
+                    Mutual Friends
+                </Card.Header>
+                <ListGroup variant="flush">
+                    {recommendedFriends.length > 0 ? (
+                    recommendedFriends.map((user) => (
+                        <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center p-3">
+                        <div>
+                            <strong>{user.name}</strong> (@{user.username})
+                            <small className="text-muted"> - {user.mutualFriendsCount} mutual friends</small>
+                        </div>
+                        <Button
+                            variant={sentRequests.has(user._id) ? "secondary" : "primary"}
+                            size="sm"
+                            className="rounded-pill"
+                            disabled={sentRequests.has(user._id)}
+                            onClick={() => handleSendRequest(user._id)}
+                        >
+                            {sentRequests.has(user._id) ? "Pending" : "Add Friend"}
+                        </Button>
+                        </ListGroup.Item>
+                    ))
+                    ) : (
+                    <ListGroup.Item className="text-center text-muted">No recommendations available.</ListGroup.Item>
+                    )}
+                </ListGroup>
+            </Card>
+
         </Col>
 
-        {/* Friend Recommendations */}
-        <Col md={3}>
-          <Card>
-            <Card.Header as="h5">
-              Recommended Friends
-              <Form.Check
-                type="switch"
-                id="mutualFilter"
-                label="Filter 2+ Mutual Friends"
-                className="float-end"
-                onChange={(e) => setFilterMutual(e.target.checked)}
-              />
-            </Card.Header>
-            <ListGroup variant="flush">
-              {recommendedFriends.length > 0 ? (
-                recommendedFriends.map((user) => (
-                  <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <strong>{user.name}</strong> (@{user.username})
-                      <small className="text-muted"> - {user.mutualFriendsCount} mutual friends</small>
-                    </div>
-                    {sentRequests.has(user._id) ? (
-                      <Button variant="secondary" size="sm" disabled>
-                        Pending
-                      </Button>
-                    ) : (
-                      <Button variant="primary" size="sm" onClick={() => handleSendRequest(user._id)}>
-                        Add Friend
-                      </Button>
-                    )}
-                  </ListGroup.Item>
-                ))
-              ) : (
-                <ListGroup.Item>No recommendations available.</ListGroup.Item>
-              )}
-            </ListGroup>
-          </Card>
-        </Col>
 
         {/* All Users with Search */}
-        <Col md={3}>
-          <Card>
-            <Card.Header as="h5">
+        <Col md={4}>
+          <Card className="shadow">
+            <Card.Header as="h5" className="fw-bold text-center bg-secondary text-white">
               All Users
               <Form.Control
                 type="text"
@@ -153,24 +178,24 @@ const Home = () => {
                   const isPending = sentRequests.has(user._id);
 
                   return (
-                    <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center">
+                    <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center p-3">
                       <div>
                         <strong>{user.name}</strong> (@{user.username})
                       </div>
-                      {isFriend ? (
-                        <Button variant="success" size="sm" disabled> Friends </Button>
-                      ) : isPending ? (
-                        <Button variant="secondary" size="sm" disabled> Pending </Button>
-                      ) : (
-                        <Button variant="primary" size="sm" onClick={() => handleSendRequest(user._id)}>
-                          Add Friend
-                        </Button>
-                      )}
+                      <Button
+                        variant={isFriend ? "success" : isPending ? "secondary" : "primary"}
+                        size="sm"
+                        className="rounded-pill"
+                        disabled={isFriend || isPending}
+                        onClick={() => handleSendRequest(user._id)}
+                      >
+                        {isFriend ? "Friends" : isPending ? "Pending" : "Add Friend"}
+                      </Button>
                     </ListGroup.Item>
                   );
                 })
               ) : (
-                <ListGroup.Item>No users found.</ListGroup.Item>
+                <ListGroup.Item className="text-center text-muted">No users found.</ListGroup.Item>
               )}
             </ListGroup>
           </Card>
@@ -181,3 +206,4 @@ const Home = () => {
 };
 
 export default Home;
+
